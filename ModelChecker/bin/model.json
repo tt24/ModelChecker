@@ -1,0 +1,47 @@
+{
+	"states": [
+		{
+			"init": true,
+			"name": 0,
+			"label": ["a"]
+		}, 
+		{
+			"init": false,
+			"name": 1, 
+			"label": [ "a", "b"]
+		}, 
+		{
+			"init": true,
+			"name": 2,
+			"label": ["c"]
+		}
+	],
+	"transitions": [
+		{
+			"source": 0,
+			"target": 1,
+			"actions": ["act"]
+		}, 
+		{
+			"source": 0,
+			"target": 2,
+			"actions": ["act2"]
+		}, 
+		{
+			"source": 1,
+			"target": 2,
+			"actions": ["act2"]
+		},
+		{
+			"source": 2,
+			"target": 0,
+			"actions": ["act2"]
+		}
+
+	],
+	"constraint": {
+		"formula": "AaFb (a && b) ",
+		"a": ["act", "act2"],
+		"b": ["act3", "act4"]
+	}
+}
