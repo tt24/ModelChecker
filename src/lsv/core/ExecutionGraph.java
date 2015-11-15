@@ -7,9 +7,9 @@ import lsv.model.*;
 
 public class ExecutionGraph {
 
-	Hashtable<String, Transition> transitionTable = new Hashtable<>();
-	Hashtable<String, GraphNode> stateNameTable = new Hashtable<>();
-	ArrayList<GraphNode> inits = new ArrayList<>();
+	private Hashtable<String, Transition> transitionTable = new Hashtable<>();
+	private Hashtable<String, GraphNode> stateNameTable = new Hashtable<>();
+	private ArrayList<GraphNode> inits = new ArrayList<>();
 
 	public void setTransitions(Model model) {
 		for (Transition transition : model.getTransitions()) {
@@ -32,6 +32,18 @@ public class ExecutionGraph {
 		setStates(model);
 		setTransitions(model);
 		return null;
+	}
+	
+	public Hashtable<String, Transition> getTransitionTable() {
+		return transitionTable;
+	}
+
+	public Hashtable<String, GraphNode> getStateNameTable() {
+		return stateNameTable;
+	}
+
+	public ArrayList<GraphNode> getInits() {
+		return inits;
 	}
 
 }
