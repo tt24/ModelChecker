@@ -11,9 +11,14 @@
 			"label": ["q"]
 		}, 
 		{
-			"init": true,
+			"init": false,
 			"name": "s2",
 			"label": ["r", "p"]
+		},
+		{
+			"init": false,
+			"name": "s3",
+			"label": []
 		}
 	],
 	"transitions": [
@@ -29,12 +34,7 @@
 		}, 
 		{
 			"source": "s1",
-			"target": "s2",
-			"actions": ["act2"]
-		},
-		{
-			"source": "s2",
-			"target": "s0",
+			"target": "s3",
 			"actions": ["act2"]
 		}
 

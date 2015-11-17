@@ -24,9 +24,8 @@ public class SimpleModelChecker implements ModelChecker {
 		return false;
 	}
 
-	public Hashtable<String, ArrayList<Transition>> getAllTransitions(Model model, String[] actionsA,
-			String[] actionsB) {
-		Hashtable<String, ArrayList<Transition>> table = new Hashtable<>();
+	public HashMap<String, ArrayList<Transition>> getAllTransitions(Model model, String[] actionsA, String[] actionsB) {
+		HashMap<String, ArrayList<Transition>> table = new HashMap<>();
 		for (Transition transition : model.getTransitions()) {
 			if (actionsA.length == 0 || actionsB.length == 0 || contains(actionsB, transition.getActions()[0])
 					|| contains(actionsA, transition.getActions()[0])) {
@@ -39,13 +38,14 @@ public class SimpleModelChecker implements ModelChecker {
 					transitionList.add(transition);
 					table.put(transition.getSource(), transitionList);
 				}
-			} 
+			}
 		}
 		return table;
 	}
 
 	public boolean checkUntil(Formula formula, State state, String transitionName,
-			Hashtable<String, ArrayList<Transition>> transitionsToCheck, Model model) {
+			HashMap<String, ArrayList<Transition>> transitionsToCheck, Model model) {
+		System.out.println("Check until " + getStringFormula(formula) + " state " + state.getName());
 		Formula[] contents = getNestedContents(formula);
 		if (transitionName.equals("first")) {
 			if (checkStateFormula(contents[1], state, model)) {
@@ -64,16 +64,26 @@ public class SimpleModelChecker implements ModelChecker {
 			}
 		} else {
 			if (actionsA.length == 0 || contains(actionsA, transitionName) || transitionName.equals("first")) {
-				for (Transition transition: transitionsToCheck.get(state.getName())) {
-					String nextStateStr = transition.getTarget();
-					State nextState = graph.getStateNameTable().get(nextStateStr).getState();
-					ArrayList<Transition> possibleTran = transitionsToCheck.get(state.getName());
-					possibleTran.remove(0);
-					transitionsToCheck.put(state.getName(), possibleTran);
-					if (checkUntil(formula, nextState, transition.getActions()[0], transitionsToCheck, model)) {
-						return true;
+				if (checkStateFormula(contents[0], state, model)) {
+					if (transitionsToCheck.get(state.getName()) != null) {
+						Iterator iterator = transitionsToCheck.get(state.getName()).iterator();
+						while (iterator.hasNext()) {
+							Transition transition = (Transition) iterator.next();
+							String nextStateStr = transition.getTarget();
+							State nextState = graph.getStateNameTable().get(nextStateStr).getState();
+							// ArrayList<Transition> possibleTran =
+							// transitionsToCheck.get(state.getName());
+							// possibleTran.remove(0);
+							// transitionsToCheck.put(state.getName(),
+							// possibleTran);
+							iterator.remove();
+							if (checkUntil(formula, nextState, transition.getActions()[0], transitionsToCheck, model)) {
+								return true;
+							}
+						}
 					}
 				}
+				
 			}
 		}
 		return false;
@@ -81,7 +91,7 @@ public class SimpleModelChecker implements ModelChecker {
 
 	public boolean contains(String[] array, String element) {
 		for (String s : array) {
-			if (s!=null && s.equals(element)) {
+			if (s != null && s.equals(element)) {
 				return true;
 			}
 		}
@@ -89,6 +99,7 @@ public class SimpleModelChecker implements ModelChecker {
 	}
 
 	public Formula[] getNestedContents(Formula formula) {
+		System.out.println("Get nested contents");
 		String[] aps = formula.getAp();
 		Formula[] ctls = formula.getNestedCTL();
 		Formula[] contents = new Formula[2];
@@ -103,6 +114,8 @@ public class SimpleModelChecker implements ModelChecker {
 	}
 
 	public boolean checkStateFormula(Formula formula, State state, Model model) {
+		System.out.println("Check state formula " + getStringFormula(formula) + " state " + state.getName()
+				+ " labels: " + getStringArray(state.getLabel()));
 		boolean negation = formula.isNegation();
 		if (formula.isSingleTt()) {
 			return checkTautology(formula) && !negation;
@@ -113,56 +126,73 @@ public class SimpleModelChecker implements ModelChecker {
 		Formula[] contents = getNestedContents(formula);
 		switch (formula.getOperator()) {
 		case "&&":
-			return !negation && checkStateFormula(contents[0], state, model) && checkStateFormula(contents[1], state, model);
+			System.out.println("Case &&");
+			return !negation && checkStateFormula(contents[0], state, model)
+					&& checkStateFormula(contents[1], state, model);
 		case "||":
-			return !negation && (checkStateFormula(contents[0], state, model) || checkStateFormula(contents[1], state, model));
+			System.out.println("Case ||");
+			return !negation
+					&& (checkStateFormula(contents[0], state, model) || checkStateFormula(contents[1], state, model));
 		case "=>":
-			return !negation && (!checkStateFormula(contents[0], state, model) || checkStateFormula(contents[1], state, model));
+			System.out.println("Case =>");
+			return !negation
+					&& (!checkStateFormula(contents[0], state, model) || checkStateFormula(contents[1], state, model));
 		case "<=>":
-			return !negation && (checkStateFormula(contents[0], state, model) == checkStateFormula(contents[1], state, model));
+			System.out.println("Case <=>");
+			return !negation
+					&& (checkStateFormula(contents[0], state, model) == checkStateFormula(contents[1], state, model));
 		case "U":
-			return !negation && checkUntil(formula, state, "first", getAllTransitions(model, formula.getActions()[0], formula.getActions()[1]), model);
+			return !negation && checkUntil(formula, state, "first",
+					getAllTransitions(model, formula.getActions()[0], formula.getActions()[1]), model);
 		}
 		return false;
 	}
-	
+
 	public boolean checkPathFormula(Formula formula, State state, Model model) {
+		System.out.println("Check path formula" + getStringFormula(formula));
 		boolean negation = formula.isNegation();
-		
+
 		switch (formula.getOperator()) {
 		case "X":
 			Formula trueTautology = new Formula(true);
-			//TODO
-			//Formula s = new For
-			//return !negation && checkStateFormula(contents[0], state, model) && checkStateFormula(contents[1], state, model);
+			// TODO
+			// Formula s = new For
+			// return !negation && checkStateFormula(contents[0], state, model)
+			// && checkStateFormula(contents[1], state, model);
 		case "G":
-			//TODO
+			// TODO
 		case "F":
-			//TODO
+			// TODO
 		}
-		
+
 		if (formula.getQuantifier().equals("A")) {
-			return negation && !checkUntil(formula, state, "first", getAllTransitions(model, formula.getActions()[0], formula.getActions()[1]), model);
-		}
-		else {
-			return !negation && checkUntil(formula, state, "first", getAllTransitions(model, formula.getActions()[0], formula.getActions()[1]), model);		
+			return negation && !checkUntil(formula, state, "first",
+					getAllTransitions(model, formula.getActions()[0], formula.getActions()[1]), model);
+		} else {
+			return !negation && checkUntil(formula, state, "first",
+					getAllTransitions(model, formula.getActions()[0], formula.getActions()[1]), model);
 		}
 	}
 
 	public boolean checkAP(Formula formula, State state) {
+		System.out.print("Check AP " + formula.getAp()[0]);
 		String ap = formula.getAp()[0];
 		for (String label : state.getLabel()) {
 			if (label.equals(ap)) {
 				if (formula.getApNeg()[0]) {
+					System.out.println(" false");
 					return false;
 				} else {
+					System.out.println(" true");
 					return true;
 				}
 			}
 		}
 		if (formula.getApNeg()[0]) {
+			System.out.println(" true");
 			return true;
 		}
+		System.out.println(" false");
 		return false;
 	}
 
@@ -179,14 +209,33 @@ public class SimpleModelChecker implements ModelChecker {
 		return null;
 	}
 
+	public String getStringFormula(Formula formula) {
+		String actions = "";
+		if (formula.getActions() != null) {
+			actions += getStringArray(formula.getActions()[0]) + " " + getStringArray(formula.getActions()[1]);
+		}
+		String result = "Negation " + formula.isNegation() + ", quantifier " + formula.getQuantifier() + ", operator "
+				+ formula.getOperator() + ", actions " + actions + ", ap " + getStringArray(formula.getAp());
+		return result;
+	}
+
+	public String getStringArray(String[] array) {
+		String result = "";
+		for (String s : array) {
+			result = result + " " + s + " ";
+		}
+		return result;
+	}
+
 	public static void main(String[] args) {
 		SimpleModelChecker smc = new SimpleModelChecker();
 		Builder builder = new Builder();
-		Model model = builder.buildModel("test/resources/model.json");
+		Model model = builder.buildModel("test/resources/ourModel.json");
 		Formula formula = builder.buildFormula("test/resources/ctl2.json");
 		smc.graph = new ExecutionGraph();
 		smc.graph.createGraph(model);
-		State state = smc.graph.getInits().get(1).getState();
+		smc.graph.printTransitionStateDetails();
+		State state = smc.graph.getInits().get(0).getState();
 		System.out.println(smc.checkPathFormula(formula, state, model));
 	}
 }
