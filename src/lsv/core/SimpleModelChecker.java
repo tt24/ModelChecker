@@ -382,17 +382,17 @@ public class SimpleModelChecker implements ModelChecker {
 		// Determine model and formula
 		//TODO pass these as command line arguments
 		Model model = Builder.buildModel("test/resources/ourModel.json");
-		Formula formula = Builder.buildFormula("test/resources/ctlNestedTest.json");
+		Formula formula = Builder.buildFormula("test/resources/ctl2.json");
 		Formula fs = smc.getInnerFormula(formula);
 		//System.out.println(formula.getOperator().length());
 
-		//		// Create execution graph
-		//		smc.graph = new ExecutionGraph();
-		//		smc.graph.createGraph(model);
-		//		smc.graph.printTransitionStateDetails();
-		//
-		//		// Check for the result
-		//		boolean result = smc.check(model, null, formula);
-		//		System.out.println("Obtained: " + result);
+				// Create execution graph
+				smc.graph = new ExecutionGraph();
+				smc.graph.createGraph(model);
+				smc.graph.printTransitionStateDetails();
+		
+				// Check for the result
+				boolean result = smc.check(model, null, formula);
+				System.out.println("Obtained: " + result);
 	}
 }
