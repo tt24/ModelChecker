@@ -245,9 +245,9 @@ public class SimpleModelChecker implements ModelChecker {
 					getAllTransitions(model, formula.getActions()[0], formula.getActions()[1]), model, formula.getActions()[0], formula.getActions()[1]);
 		case "X":
 			Formula trueTautology = new Formula(true);
-			Formula[] secondP
-			Formula innerFormula = getInnerFormula(formula);
-			Formula transformedToU = new Formula(trueTautology, innerFormula, "U");
+//			Formula[] secondP
+//			Formula innerFormula = getInnerFormula(formula);
+//			Formula transformedToU = new Formula(trueTautology, innerFormula, "U");
 			if (allQuantifier) {
 				return negation && !checkUntil(formula, state, "first",
 						getAllTransitions(model, formula.getActions()[0], formula.getActions()[1]), model, formula.getActions()[0], formula.getActions()[1]);
@@ -389,7 +389,7 @@ public class SimpleModelChecker implements ModelChecker {
 		//TODO pass these as command line arguments
 		Model model = Builder.buildModel("test/resources/ourModel.json");
 		Formula formula = Builder.buildFormula("test/resources/ctlNestedTest.json");
-		Formula fs = smc.getInnerFormula(formula);
+//		Formula fs = smc.getInnerFormula(formula);
 		//System.out.println(formula.getOperator().length());
 
 		//		// Create execution graph
