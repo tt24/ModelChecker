@@ -157,7 +157,12 @@ public class SimpleModelChecker implements ModelChecker {
 		Formula[] contents = new Formula[2];
 		for (int i = 0; i < aps.length; i++) {
 			if (aps[i] != null) {
-				contents[i] = new Formula(aps[i]);
+				String apToPass = aps[i];
+				// If the ap is negated, we need to add the negation to the beginning of the ap string for it to be parsed correctly
+				if (formula.getApNeg()[i]) {
+					apToPass = "¬" + apToPass;
+				}
+				contents[i] = new Formula(apToPass);
 			} else {
 				if (ctls != null) {
 					contents[i] = ctls[i];
@@ -240,6 +245,7 @@ public class SimpleModelChecker implements ModelChecker {
 					getAllTransitions(model, formula.getActions()[0], formula.getActions()[1]), model, formula.getActions()[0], formula.getActions()[1]);
 		case "X":
 			Formula trueTautology = new Formula(true);
+			Formula[] secondP
 			Formula innerFormula = getInnerFormula(formula);
 			Formula transformedToU = new Formula(trueTautology, innerFormula, "U");
 			if (allQuantifier) {
@@ -258,40 +264,40 @@ public class SimpleModelChecker implements ModelChecker {
 	}
 
 
-	public Formula getInnerFormula(Formula formula) {
-
-		String[] aps = formula.getAp();
-		Formula[] ctls = formula.getNestedCTL();
-		Formula innerFormula;
-		if (formula.getOperator() != null) {
-			if (ctls != null && (ctls[0] != null || ctls[1] != null)) {
-				if (ctls[0] != null && ctls[1] != null) {
-					innerFormula = new Formula(ctls[0], ctls[1], formula.getOperator());
-				}
-				else {
-					if (aps[0] != null) {
-						innerFormula = new Formula(aps[0], ctls[1], formula.getOperator());
-					}
-					else {
-						innerFormula = new Formula(ctls[0], aps[1], formula.getOperator());
-					}
-				}
-			}
-			else {
-				innerFormula = new Formula(aps[0], aps[1], formula.getOperator());
-			}
-		}
-		else {
-			if (ctls != null) {
-				innerFormula = ctls[0];
-			}
-			else {
-				innerFormula = new Formula(aps[0]);
-			}
-		}
-		
-		return innerFormula;
-	}
+//	public Formula getInnerFormula(Formula formula) {
+//
+//		String[] aps = formula.getAp();
+//		Formula[] ctls = formula.getNestedCTL();
+//		Formula innerFormula;
+//		if (formula.getOperator() != null) {
+//			if (ctls != null && (ctls[0] != null || ctls[1] != null)) {
+//				if (ctls[0] != null && ctls[1] != null) {
+//					innerFormula = new Formula(ctls[0], ctls[1], formula.getOperator());
+//				}
+//				else {
+//					if (aps[0] != null) {
+//						innerFormula = new Formula(aps[0], ctls[1], formula.getOperator());
+//					}
+//					else {
+//						innerFormula = new Formula(ctls[0], aps[1], formula.getOperator());
+//					}
+//				}
+//			}
+//			else {
+//				innerFormula = new Formula(aps[0], aps[1], formula.getOperator());
+//			}
+//		}
+//		else {
+//			if (ctls != null) {
+//				innerFormula = ctls[0];
+//			}
+//			else {
+//				innerFormula = new Formula(aps[0]);
+//			}
+//		}
+//		
+//		return innerFormula;
+//	}
 
 	/**
 	 * Checks the validity of an atomic proposition at the given state.
