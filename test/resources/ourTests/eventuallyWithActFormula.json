@@ -1,0 +1,5 @@
+{
+	"formula": " EaFb (p && q) ",
+    "a": ["act1"],
+    "b": ["act2"]
+}

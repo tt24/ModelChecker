@@ -1,0 +1,10 @@
+{
+	"states": [
+		{
+			"init": true,
+			"name": "s0",
+			"label": ["q", "p"]
+		}
+	],
+	"transitions": []
+}
