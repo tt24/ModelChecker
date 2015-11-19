@@ -22,20 +22,24 @@ public class SimpleModelChecker implements ModelChecker {
 	 */
 	public boolean check(Model model, Formula constraint, Formula formula) {
 		ArrayList<GraphNode> initialSt = graph.getInits();
-		boolean formulaHolds = true;
+		boolean formulaHolds;
+		if (formula.getQuantifier() != null && formula.getQuantifier().contains("E")) {
+			formulaHolds = false;
+		} else {
+			formulaHolds = true;
+		}
 		// Go through all of the initial states and check if the formula holds
 		// for all of them
 		for (int index = 0; index < initialSt.size(); index++) {
 			trace = new ArrayList<>();
 			State initSt = initialSt.get(index).getState();
-			// If formula has quantifiers in front of it, it is going to be a
-			// path formula
-			if (formula.getQuantifier() != null && formula.getQuantifier().length() != 0) {
-				formulaHolds = formulaHolds && checkPathFormula(formula, initSt, model);
-			}
-			// Otherwise it is a state formula
-			else {
-				formulaHolds = formulaHolds && checkStateFormula(formula, initSt, model);
+			// If formula has quantifier E in front of it, formula has to hold
+			// for at least one initial state
+			// if A - for all initial states
+			if (formula.getQuantifier() != null && formula.getQuantifier().contains("E")) {
+				formulaHolds = formulaHolds || checkFormulaKind(formula, initSt, model);
+			} else {
+				formulaHolds = formulaHolds && checkFormulaKind(formula, initSt, model);
 			}
 		}
 		return formulaHolds;
@@ -116,7 +120,7 @@ public class SimpleModelChecker implements ModelChecker {
 			if (!transitionName.equals("first")) {
 				trace.add(transitionName);
 			}
-			if (checkStateFormula(contents[1], state, model)) {
+			if (checkFormulaKind(contents[1], state, model)) {
 				// if (!forAll) {
 				// return true;
 				// }
@@ -142,7 +146,7 @@ public class SimpleModelChecker implements ModelChecker {
 				trace.add(transitionName);
 			}
 			// If so, check whether the first part of the formula holds
-			if (checkStateFormula(contents[0], state, model)) {
+			if (checkFormulaKind(contents[0], state, model)) {
 				// If there are any transitions we can take from here, do
 				// that
 				if (transitionsToCheck.get(state.getName()) != null) {
@@ -293,22 +297,29 @@ public class SimpleModelChecker implements ModelChecker {
 		switch (formula.getOperator()) {
 		case "&&":
 			System.out.println("Case &&");
-			result = checkStateFormula(contents[0], state, model) && checkStateFormula(contents[1], state, model);
+			result = checkFormulaKind(contents[0], state, model) && checkFormulaKind(contents[1], state, model);
 			break;
 		case "||":
 			System.out.println("Case ||");
-			result = (checkStateFormula(contents[0], state, model) || checkStateFormula(contents[1], state, model));
+			result = (checkFormulaKind(contents[0], state, model) || checkFormulaKind(contents[1], state, model));
 			break;
 		case "=>":
 			System.out.println("Case =>");
-			result = (!checkStateFormula(contents[0], state, model) || checkStateFormula(contents[1], state, model));
+			result = (!checkFormulaKind(contents[0], state, model) || checkFormulaKind(contents[1], state, model));
 			break;
 		case "<=>":
 			System.out.println("Case <=>");
-			result = (checkStateFormula(contents[0], state, model) == checkStateFormula(contents[1], state, model));
+			result = (checkFormulaKind(contents[0], state, model) == checkFormulaKind(contents[1], state, model));
 			break;
 		}
 		return negation ? !result : result;
+	}
+
+	public boolean checkFormulaKind(Formula formula, State state, Model model) {
+		if (formula.getQuantifier() == null) {
+			return checkStateFormula(formula, state, model);
+		}
+		return checkPathFormula(formula, state, model);
 	}
 
 	public boolean checkPathFormula(Formula formula, State state, Model model) {
@@ -420,7 +431,7 @@ public class SimpleModelChecker implements ModelChecker {
 	}
 
 	public String[] getTrace() {
-		while(trace.contains("\\")) {
+		while (trace.contains("\\")) {
 			trace.remove("\\");
 		}
 		String[] array = new String[trace.size()];
@@ -480,8 +491,8 @@ public class SimpleModelChecker implements ModelChecker {
 
 		// Determine model and formula
 		// TODO pass these as command line arguments
-		Model model = Builder.buildModel("test/resources/ourTests/alwaysModel.json");
-		Formula formula = Builder.buildFormula("test/resources/ourTests/conjunctionTestFormula.json");
+		Model model = Builder.buildModel("test/resources/ourTests/alwaysForAllModel.json");
+		Formula formula = Builder.buildFormula("test/resources/ourTests/alwaysForAllFormula.json");
 
 		// System.out.println(formula.getOperator().length());
 

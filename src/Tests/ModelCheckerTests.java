@@ -193,7 +193,7 @@ public class ModelCheckerTests {
 	
 	@Test
 	public void testAlwaysForAllFails() {
-		parseArguments("test/resources/ourTests/alwaysForAllModel.json", "test/resources/ourTests/alwaysWithActFormula.json", null);
+		parseArguments("test/resources/ourTests/alwaysForAllModel.json", "test/resources/ourTests/alwaysForAllFormula.json", null);
 		assertFalse(checker.check(model, constraints, formula));
 	}
 
