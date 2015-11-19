@@ -315,13 +315,13 @@ public class SimpleModelChecker implements ModelChecker {
 			transformedToU = new Formula(trueTautology, nested, "U");
 			result = checkUntil(transformedToU, state, "first",
 					getAllTransitions(model, formula.getActions()[0], formula.getActions()[1], allQuantifier), model,
-					formula.getActions()[0], formula.getActions()[1], allQuantifier, true);
+					formula.getActions()[0], formula.getActions()[1], allQuantifier, false);
 			return negation ? !result : result;
 		case "G":
-			transformedToU = new Formula(trueTautology, new Formula(false, nested), "U");
+			transformedToU = new Formula(trueTautology, new Formula(true, nested), "U");
 			result = checkUntil(transformedToU, state, "first",
-					getAllTransitions(model, formula.getActions()[0], new String[0], allQuantifier), model,
-					new String[0], formula.getActions()[0], allQuantifier, true);
+					getAllTransitions(model, formula.getActions()[0], formula.getActions()[1], allQuantifier), model,
+					formula.getActions()[0], formula.getActions()[1], allQuantifier, false);
 			return negation ? result : !result;
 		}
 
@@ -435,8 +435,8 @@ public class SimpleModelChecker implements ModelChecker {
 
 		// Determine model and formula
 		// TODO pass these as command line arguments
-		Model model = Builder.buildModel("test/resources/ourTests/eventuallyModel.json");
-		Formula formula = Builder.buildFormula("test/resources/ourTests/eventuallyWithActFormula.json");
+		Model model = Builder.buildModel("test/resources/ourTests/alwaysModel.json");
+		Formula formula = Builder.buildFormula("test/resources/ourTests/alwaysNoActFormula.json");
 		// System.out.println(formula.getOperator().length());
 
 		// Create execution graph

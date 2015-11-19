@@ -1,0 +1,5 @@
+{
+	"formula": " EaGb (p && q) ",
+    "a": ["act1", "act2"],
+    "b": ["act2"]
+}

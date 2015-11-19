@@ -166,4 +166,28 @@ public class ModelCheckerTests {
 		parseArguments("test/resources/ourTests/eventuallyModel.json", "test/resources/ourTests/eventuallyWithActFormula.json", null);
 		assertTrue(checker.check(model, constraints, formula));
 	}
+	
+	@Test
+	public void testEventuallyFails() {
+		parseArguments("test/resources/ourTests/eventuallyModel2.json", "test/resources/ourTests/eventuallyWithActFormula.json", null);
+		assertFalse(checker.check(model, constraints, formula));
+	}
+	
+	@Test
+	public void testAlwaysNoActHolds() {
+		parseArguments("test/resources/ourTests/alwaysModel.json", "test/resources/ourTests/alwaysNoActFormula.json", null);
+		assertTrue(checker.check(model, constraints, formula));
+	}
+	
+	@Test
+	public void testAlwaysWithActHolds() {
+		parseArguments("test/resources/ourTests/alwaysModel.json", "test/resources/ourTests/alwaysWithActFormula.json", null);
+		assertTrue(checker.check(model, constraints, formula));
+	}
+	
+	@Test
+	public void testAlwaysFails() {
+		parseArguments("test/resources/ourTests/alwaysModel2.json", "test/resources/ourTests/alwaysWithActFormula.json", null);
+		assertFalse(checker.check(model, constraints, formula));
+	}
 }
