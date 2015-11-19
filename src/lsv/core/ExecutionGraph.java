@@ -28,10 +28,9 @@ public class ExecutionGraph {
 		}
 	}
 
-	public ArrayList<GraphNode> createGraph(Model model) {
+	public void createGraph(Model model) {
 		setStates(model);
 		setTransitions(model);
-		return null;
 	}
 
 	public HashMap<String, Transition> getTransitionTable() {

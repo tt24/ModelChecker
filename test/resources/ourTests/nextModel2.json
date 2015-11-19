@@ -3,17 +3,17 @@
 		{
 			"init": true,
 			"name": "s0",
-			"label": ["q", "q"]
+			"label": ["p", "q"]
 		}, 
 		{
 			"init": false,
 			"name": "s1",
-			"label": ["p"]
+			"label": ["q"]
 		}, 
 		{
 			"init": false,
 			"name": "s2", 
-			"label": ["r"]
+			"label": ["p", "q"]
 		} 
 	],
 	"transitions": [
@@ -24,7 +24,7 @@
 
 		},
 		{
-			"source": "s0",
+			"source": "s1",
 			"target": "s2",
 			"actions": ["act1"]
 		}

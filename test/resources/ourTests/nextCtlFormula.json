@@ -1,4 +1,3 @@
 {
-	"formula": "EX ( (q && r) || (r && p)) ",
-	“a”: ["act1"]
+	"formula": "EX (r) "
 }
