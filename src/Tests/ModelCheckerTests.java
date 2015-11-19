@@ -190,4 +190,16 @@ public class ModelCheckerTests {
 		parseArguments("test/resources/ourTests/alwaysModel2.json", "test/resources/ourTests/alwaysWithActFormula.json", null);
 		assertFalse(checker.check(model, constraints, formula));
 	}
+	
+	@Test
+	public void testAlwaysForAllFails() {
+		parseArguments("test/resources/ourTests/alwaysForAllModel.json", "test/resources/ourTests/alwaysWithActFormula.json", null);
+		assertFalse(checker.check(model, constraints, formula));
+	}
+
+	@Test
+	public void testAlwaysWithActHoldsMultipleInit() {
+		parseArguments("test/resources/ourTests/alwaysForAllModel.json", "test/resources/ourTests/alwaysWithActFormula.json", null);
+		assertTrue(checker.check(model, constraints, formula));
+	}
 }
