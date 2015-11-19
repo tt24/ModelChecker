@@ -30,7 +30,7 @@
 		{
 			"source": "s0",
 			"target": "s2",
-			"actions": ["act1"]
+			"actions": ["act2"]
 		}, 
 		{
 			"source": "s1",

@@ -58,9 +58,11 @@ public class SimpleModelChecker implements ModelChecker {
 		HashMap<String, ArrayList<Transition>> table = new HashMap<>();
 		// Loop through all the transitions listed for the model
 		for (Transition transition : model.getTransitions()) {
-			// Transitions is relevant if it is contained by either of the action sets
-			// If an action set is not specified, we assume that all transitions are relevant
-			if (actionsA==null || actionsB==null || contains(actionsB, transition.getActions()[0])
+			// Transitions is relevant if it is contained by either of the
+			// action sets
+			// If an action set is not specified, we assume that all transitions
+			// are relevant
+			if (actionsA == null || actionsB == null || contains(actionsB, transition.getActions()[0])
 					|| contains(actionsA, transition.getActions()[0]) || forAll) {
 				if (table.containsKey(transition.getSource())) {
 					ArrayList<Transition> transitionList = table.get(transition.getSource());
@@ -98,69 +100,62 @@ public class SimpleModelChecker implements ModelChecker {
 			String[] actionsB, boolean forAll, boolean isNext) {
 		System.out.println("Check until " + getStringFormula(formula) + " state " + state.getName());
 		Formula[] contents = getNestedContents(formula);
-
+		boolean reached = false;
 		// If we got to the current state via an action of the second set and
 		// part two holds, then formula holds
-		if (actionsB.length == 0 || contains(actionsB, transitionName)|| (transitionName.equals("first") && !isNext)) {
-			trace.add(transitionName);
+		if (actionsB.length == 0 || contains(actionsB, transitionName) || (transitionName.equals("first") && !isNext)) {
+			if (!transitionName.equals("first")) {
+				trace.add(transitionName);
+			}
 			if (checkStateFormula(contents[1], state, model)) {
 				if (!forAll) {
 					return true;
 				}
+				else {
+					reached = true;
+				}
 			}
-			trace.remove(trace.size() - 1);
+			if (!transitionName.equals("first")) {
+				trace.remove(trace.size() - 1);
+			}
 		}
 		// Otherwise check if we got here via an action from the first action
 		// set
-		else {
-			if (actionsA.length == 0 || contains(actionsA, transitionName) || transitionName.equals("first")) {
-				if (!transitionName.equals("first")) {
-					trace.add(transitionName);
-				}
-				// If so, check whether the first part of the formula holds
-				if (checkStateFormula(contents[0], state, model)) {
-					// If there are any transitions we can take from here, do
-					// that
-					if (transitionsToCheck.get(state.getName()) != null) {
-						// Iterate over all possible transitions
-						Iterator<Transition> iterator = transitionsToCheck.get(state.getName()).iterator();
-						while (iterator.hasNext()) {
-							Transition transition = iterator.next();
-							String nextStateStr = transition.getTarget();
-							State nextState = graph.getStateNameTable().get(nextStateStr).getState();
-							iterator.remove();
-							// Check the same path formula for the destination
-							// state
-							if (checkUntil(formula, nextState, transition.getActions()[0], transitionsToCheck, model,
-									actionsA, actionsB, forAll, isNext)) {
-								if (!forAll) {
-									return true;
-								}
-							} else {
-								if (forAll || transitionsToCheck.size()==0) {
-									return false;
-								}
+		if (actionsA.length == 0 || contains(actionsA, transitionName) || transitionName.equals("first")) {
+			if (!transitionName.equals("first")) {
+				trace.add(transitionName);
+			}
+			// If so, check whether the first part of the formula holds
+			if (checkStateFormula(contents[0], state, model)) {
+				// If there are any transitions we can take from here, do
+				// that
+				if (transitionsToCheck.get(state.getName()) != null) {
+					// Iterate over all possible transitions
+					Iterator<Transition> iterator = transitionsToCheck.get(state.getName()).iterator();
+					while (iterator.hasNext()) {
+						Transition transition = iterator.next();
+						String nextStateStr = transition.getTarget();
+						State nextState = graph.getStateNameTable().get(nextStateStr).getState();
+						iterator.remove();
+						// Check the same path formula for the destination
+						// state
+						if (reached = checkUntil(formula, nextState, transition.getActions()[0], transitionsToCheck, model,
+								actionsA, actionsB, forAll, isNext)) {
+							if (!forAll) {
+								return true;
 							}
-						}
-					} else {
-						if (forAll) {
-							return false;
-						}
+						} 
 					}
-				} else {
-					if (forAll) {
-						return false;
-					}
-				}
-				trace.remove(trace.size() - 1);
-			} else {
-				if (forAll) {
-					trace.add(transitionName);
-					return false;
-				}
+				} 
+			} 
+			trace.remove(trace.size() - 1);
+		} else {
+			if (forAll && !contains(actionsB, transitionName)) {
+				trace.add(transitionName);
+				return false;
 			}
 		}
-		return true;
+		return reached;
 	}
 
 	public boolean contains(String[] array, String element) {
@@ -193,21 +188,22 @@ public class SimpleModelChecker implements ModelChecker {
 		for (int i = 0; i < aps.length; i++) {
 			if (aps[i] != null) {
 				String apToPass = aps[i];
-				// If the ap is negated, we need to add the negation to the beginning of the ap string for it to be parsed correctly
+				// If the ap is negated, we need to add the negation to the
+				// beginning of the ap string for it to be parsed correctly
 				if (formula.getApNeg()[i]) {
 					apToPass = "¬" + apToPass;
 				}
 				contents[i] = new Formula(apToPass);
-			} 
+			}
 			if (ctls != null) {
 				if (ctls[i] != null) {
-					contents[i] = ctls[i];		
+					contents[i] = ctls[i];
 				}
 			}
-			if (tautologies!= null && tautologies[i]!= null && tautologies[i].equalsIgnoreCase("True")) {
+			if (tautologies != null && tautologies[i] != null && tautologies[i].equalsIgnoreCase("True")) {
 				contents[i] = new Formula(true);
 			}
-			if (tautologies!= null && tautologies[i]!= null && tautologies[i].equalsIgnoreCase("False")) {
+			if (tautologies != null && tautologies[i] != null && tautologies[i].equalsIgnoreCase("False")) {
 				contents[i] = new Formula(false);
 			}
 		}
@@ -276,7 +272,7 @@ public class SimpleModelChecker implements ModelChecker {
 		}
 
 		String operator = "";
-		if (formula.getOperator()!=null && formula.getOperator().equals("U")) {
+		if (formula.getOperator() != null && formula.getOperator().equals("U")) {
 			operator = formula.getOperator();
 		} else {
 			operator = formula.getQuantifier().substring(1);
@@ -324,16 +320,18 @@ public class SimpleModelChecker implements ModelChecker {
 			Formula trueTautology = new Formula(true);
 			Formula[] secondPart = getNestedContents(formula);
 			Formula nested = secondPart[0];
-			if (secondPart[1]!=null) {
+			if (secondPart[1] != null) {
 				nested = new Formula(secondPart[0], secondPart[1], formula.getOperator());
 			}
 			Formula transformedToU = new Formula(trueTautology, nested, "U");
 			if (allQuantifier) {
 				return negation && !checkUntil(transformedToU, state, "first",
-						getAllTransitions(model, formula.getActions()[0], new String[0], allQuantifier), model,  new String[0], formula.getActions()[0],allQuantifier, true);
+						getAllTransitions(model, formula.getActions()[0], new String[0], allQuantifier), model,
+						new String[0], formula.getActions()[0], allQuantifier, true);
 			}
 			return !negation && checkUntil(transformedToU, state, "first",
-					getAllTransitions(model, formula.getActions()[0], new String[0], allQuantifier), model,  new String[0], formula.getActions()[0],allQuantifier, true);
+					getAllTransitions(model, formula.getActions()[0], new String[0], allQuantifier), model,
+					new String[0], formula.getActions()[0], allQuantifier, true);
 		case "G":
 			// TODO
 		case "F":
@@ -435,10 +433,10 @@ public class SimpleModelChecker implements ModelChecker {
 	 */
 	public String getStringFormula(Formula formula) {
 		String actions = "";
-		if (formula.getActions()!= null && formula.getActions()[0] != null) {
+		if (formula.getActions() != null && formula.getActions()[0] != null) {
 			actions += getStringArray(formula.getActions()[0]);
 		}
-		if (formula.getActions()!= null && formula.getActions()[1] != null) {
+		if (formula.getActions() != null && formula.getActions()[1] != null) {
 			actions += " " + getStringArray(formula.getActions()[1]);
 		}
 		if (actions.length() == 0) {
