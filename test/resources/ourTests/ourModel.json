@@ -18,6 +18,11 @@
 		{
 			"init": false,
 			"name": "s3",
+			"label": ["p", "q"]
+		}, 
+		{
+			"init": false,
+			"name": "s4",
 			"label": ["p"]
 		}
 	],
@@ -30,11 +35,16 @@
 		{
 			"source": "s0",
 			"target": "s2",
-			"actions": ["act2"]
+			"actions": ["act1"]
 		}, 
 		{
 			"source": "s1",
 			"target": "s3",
+			"actions": ["act1"]
+		}, 
+		{
+			"source": "s3",
+			"target": "s4",
 			"actions": ["act2"]
 		}
 

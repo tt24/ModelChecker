@@ -103,22 +103,38 @@ public class SimpleModelChecker implements ModelChecker {
 		boolean reached = false;
 		// If we got to the current state via an action of the second set and
 		// part two holds, then formula holds
-		if (((actionsB == null || contains(actionsB, transitionName)) && !(transitionName.equals("first") && isNext)) || (transitionName.equals("first") && !isNext)) {
+		if (((actionsB == null || contains(actionsB, transitionName)) && !(transitionName.equals("first") && isNext))
+				|| (transitionName.equals("first") && !isNext)) {
+			// for(int i = trace.size()-1; i>=0; i--) {
+			// if(!trace.get(i).equals("\\")) {
+			// trace.remove(i);
+			// }
+			// else {
+			// break;
+			// }
+			// }
 			if (!transitionName.equals("first")) {
 				trace.add(transitionName);
 			}
 			if (checkStateFormula(contents[1], state, model)) {
-				if (!forAll) {
-					return true;
-				}
-				else {
-					reached = true;
-				}
-			}
-			if (!transitionName.equals("first")) {
-				trace.remove(trace.size() - 1);
+				// if (!forAll) {
+				// return true;
+				// }
+				// else {
+				// reached = true;
+				// }
+				return true;
 			}
 		}
+		// else {
+		// if(forAll&&(transitionsToCheck.get(state.getName())==null
+		// ||transitionsToCheck.get(state.getName()).size()==0)) {
+		// if(!trace.get(trace.size()-1).equals(transitionName)) {
+		// trace.add(transitionName);
+		// }
+		// return false;
+		// }
+		// }
 		// Otherwise check if we got here via an action from the first action
 		// set
 		if (actionsA == null || contains(actionsA, transitionName) || transitionName.equals("first")) {
@@ -132,28 +148,54 @@ public class SimpleModelChecker implements ModelChecker {
 				if (transitionsToCheck.get(state.getName()) != null) {
 					// Iterate over all possible transitions
 					Iterator<Transition> iterator = transitionsToCheck.get(state.getName()).iterator();
+					if (transitionsToCheck.get(state.getName()) != null
+							&& transitionsToCheck.get(state.getName()).size() > 1) {
+						trace.add("\\");
+					}
+					boolean first = true;
 					while (iterator.hasNext()) {
+						// for(int i = trace.size()-1; i>=0; i--) {
+						// if(!trace.get(i).equals("")) {
+						// trace.remove(i);
+						// }
+						// else {
+						// break;
+						// }
+						// }
+						if (!first) {
+							for (int i = trace.size() - 1; i >= 0; i--) {
+								if (!trace.get(i).equals("\\")) {
+									trace.remove(i);
+								} else {
+									break;
+								}
+							}
+						}
+						first = false;
 						Transition transition = iterator.next();
 						String nextStateStr = transition.getTarget();
 						State nextState = graph.getStateNameTable().get(nextStateStr).getState();
 						iterator.remove();
 						// Check the same path formula for the destination
 						// state
-						if (reached = checkUntil(formula, nextState, transition.getActions()[0], transitionsToCheck, model,
-								actionsA, actionsB, forAll, isNext)) {
+						if (reached = checkUntil(formula, nextState, transition.getActions()[0], transitionsToCheck,
+								model, actionsA, actionsB, forAll, isNext)) {
 							if (!forAll) {
 								return true;
 							}
-//								else {
-//								if (forAll || transitionsToCheck.size()==0) {
-//									return false;
-//								}
-//							}
-						} 
+							// else {
+							// if (forAll || transitionsToCheck.size()==0) {
+							// return false;
+							// }
+							// }
+						} else {
+							if (forAll) {
+								return false;
+							}
+						}
 					}
-				} 
-			} 
-			trace.remove(trace.size() - 1);
+				}
+			}
 		} else {
 			if (forAll && !contains(actionsB, transitionName)) {
 				trace.add(transitionName);
@@ -378,6 +420,9 @@ public class SimpleModelChecker implements ModelChecker {
 	}
 
 	public String[] getTrace() {
+		while(trace.contains("\\")) {
+			trace.remove("\\");
+		}
 		String[] array = new String[trace.size()];
 		return trace.toArray(array);
 	}
@@ -435,8 +480,8 @@ public class SimpleModelChecker implements ModelChecker {
 
 		// Determine model and formula
 		// TODO pass these as command line arguments
-		Model model = Builder.buildModel("test/resources/ourTests/eventuallyModel.json");
-		Formula formula = Builder.buildFormula("test/resources/ourTests/eventuallyWithActFormula.json");
+		Model model = Builder.buildModel("test/resources/ourTests/ourModel.json");
+		Formula formula = Builder.buildFormula("test/resources/ctl2.json");
 		// System.out.println(formula.getOperator().length());
 
 		// Create execution graph
