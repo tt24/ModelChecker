@@ -14,6 +14,7 @@ public class SimpleModelChecker implements ModelChecker {
 
 	private ExecutionGraph graph = new ExecutionGraph();
 	private ArrayList<String> trace;
+	private Formula constraint = null;
 
 	/**
 	 * Determines whether a formula holds for the given model by looping through
@@ -22,12 +23,45 @@ public class SimpleModelChecker implements ModelChecker {
 	 */
 	public boolean check(Model model, Formula constraint, Formula formula) {
 		ArrayList<GraphNode> initialSt = graph.getInits();
-		boolean formulaHolds;
-		if (formula.getQuantifier() != null && formula.getQuantifier().contains("E")) {
-			formulaHolds = false;
-		} else {
-			formulaHolds = true;
+		if (constraint != null) {
+			this.constraint = constraint;
+			if (constraint.getQuantifier() != null) {
+				boolean constraintHolds = false;
+				for (int index = 0; index < initialSt.size(); index++) {
+					trace = new ArrayList<>();
+					State initSt = initialSt.get(index).getState();
+					if (!checkFormulaKind(constraint, initSt, model)) {
+						if(constraint.getQuantifier().contains("A")) {
+							return false;
+						}
+					}
+					else {
+						constraintHolds = true;
+						if(constraint.getQuantifier().contains("E")) {
+							break;
+						}
+					}
+				}
+				if(!constraintHolds) {
+					return false;
+				}
+				if(constraint.getQuantifier().contains("A")) {
+					constraint = null;
+				}
+				else {
+					
+				}
+			} else {
+				for (int index = 0; index < initialSt.size(); index++) {
+					trace = new ArrayList<>();
+					State initSt = initialSt.get(index).getState();
+					if (!checkStateFormula(constraint, initSt, model)) {
+						return false;
+					}
+				}
+			}
 		}
+		boolean formulaHolds = true;
 		// Go through all of the initial states and check if the formula holds
 		// for all of them
 		for (int index = 0; index < initialSt.size(); index++) {
@@ -37,9 +71,13 @@ public class SimpleModelChecker implements ModelChecker {
 			// for at least one initial state
 			// if A - for all initial states
 			if (formula.getQuantifier() != null && formula.getQuantifier().contains("E")) {
-				formulaHolds = formulaHolds || checkFormulaKind(formula, initSt, model);
+				if (formulaHolds = checkFormulaKind(formula, initSt, model)) {
+					return true;
+				}
 			} else {
-				formulaHolds = formulaHolds && checkFormulaKind(formula, initSt, model);
+				if (!(formulaHolds = checkFormulaKind(formula, initSt, model))) {
+					return false;
+				}
 			}
 		}
 		return formulaHolds;
@@ -80,6 +118,10 @@ public class SimpleModelChecker implements ModelChecker {
 			}
 		}
 		return table;
+	}
+	
+	public boolean checkConstraint(Formula constraint, State state, String transitionName) {
+		return false;
 	}
 
 	/**
@@ -130,15 +172,6 @@ public class SimpleModelChecker implements ModelChecker {
 				return true;
 			}
 		}
-		// else {
-		// if(forAll&&(transitionsToCheck.get(state.getName())==null
-		// ||transitionsToCheck.get(state.getName()).size()==0)) {
-		// if(!trace.get(trace.size()-1).equals(transitionName)) {
-		// trace.add(transitionName);
-		// }
-		// return false;
-		// }
-		// }
 		// Otherwise check if we got here via an action from the first action
 		// set
 		if (actionsA == null || contains(actionsA, transitionName) || transitionName.equals("first")) {
@@ -210,6 +243,9 @@ public class SimpleModelChecker implements ModelChecker {
 	}
 
 	public boolean contains(String[] array, String element) {
+		if (array == null) {
+			return true;
+		}
 		if (array.length == 0) {
 			return false;
 		}
@@ -491,8 +527,8 @@ public class SimpleModelChecker implements ModelChecker {
 
 		// Determine model and formula
 		// TODO pass these as command line arguments
-		Model model = Builder.buildModel("test/resources/ourTests/alwaysForAllModel.json");
-		Formula formula = Builder.buildFormula("test/resources/ourTests/alwaysForAllFormula.json");
+		Model model = Builder.buildModel("test/resources/ourTests/modelForNested.json");
+		Formula formula = Builder.buildFormula("test/resources/ourTests/nestedFormula.json");
 
 		// System.out.println(formula.getOperator().length());
 

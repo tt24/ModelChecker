@@ -202,4 +202,64 @@ public class ModelCheckerTests {
 		parseArguments("test/resources/ourTests/alwaysForAllModel.json", "test/resources/ourTests/alwaysWithActFormula.json", null);
 		assertTrue(checker.check(model, constraints, formula));
 	}
+	
+	@Test
+	public void testAlwaysForAllHolds() {
+		parseArguments("test/resources/ourTests/alwaysForAllModel2.json", "test/resources/ourTests/alwaysForAllPFormula.json", null);
+		assertTrue(checker.check(model, constraints, formula));
+	}
+	
+	@Test
+	public void testNextForAllFails() {
+		parseArguments("test/resources/ourTests/nextForAllModel2.json", "test/resources/ourTests/nextForAllFormula.json", null);
+		assertFalse(checker.check(model, constraints, formula));
+	}
+	
+	@Test
+	public void testNextForAllFailsMultipleInits() {
+		parseArguments("test/resources/ourTests/nextForAllModel3.json", "test/resources/ourTests/nextForAllFormula.json", null);
+		assertFalse(checker.check(model, constraints, formula));
+	}
+	
+	@Test
+	public void testNextForAllHolds() {
+		parseArguments("test/resources/ourTests/nextForAllModel.json", "test/resources/ourTests/nextForAllFormula.json", null);
+		assertTrue(checker.check(model, constraints, formula));
+	}
+	
+	@Test
+	public void testEventuallyForAllFailsTwoBranches() {
+		parseArguments("test/resources/ourTests/eventuallyModel2.json", "test/resources/ourTests/eventuallyAlwaysFormula.json", null);
+		assertFalse(checker.check(model, constraints, formula));
+	}
+	
+	@Test
+	public void testEventuallyForAllHoldsTwoBranches() {
+		parseArguments("test/resources/ourTests/eventuallyModel3.json", "test/resources/ourTests/eventuallyAlwaysFormula.json", null);
+		assertTrue(checker.check(model, constraints, formula));
+	}
+	
+	@Test
+	public void untilForAllHoldsTwoBranches() {
+		parseArguments("test/resources/ourTests/untilModel3.json", "test/resources/ourTests/untilWithActForAllFormula.json", null);
+		assertTrue(checker.check(model, constraints, formula));
+	}
+	
+	@Test
+	public void untilForAllFailsWrongAction() {
+		parseArguments("test/resources/ourTests/untilModel1.json", "test/resources/ourTests/untilWithActForAllFormula.json", null);
+		assertFalse(checker.check(model, constraints, formula));
+	}
+	
+	@Test
+	public void testNested() {
+		parseArguments("test/resources/ourTests/modelForNested.json", "test/resources/ourTests/nestedFormula.json", "test/resources/ourTests/constraintQ.json");
+		assertTrue(checker.check(model, constraints, formula));
+	}
+	
+	@Test
+	public void testNestedConjunctionConstr() {
+		parseArguments("test/resources/ourTests/modelForNested.json", "test/resources/ourTests/nestedFormula.json", "test/resources/ourTests/constraintConjunction.json");
+		assertFalse(checker.check(model, constraints, formula));
+	}
 }
