@@ -121,6 +121,7 @@ public class SimpleModelChecker implements ModelChecker {
 	}
 	
 	public boolean checkConstraint(Formula constraint, State state, String transitionName) {
+		
 		return false;
 	}
 
