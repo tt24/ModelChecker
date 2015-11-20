@@ -1,9 +1,7 @@
 package lsv.core;
 
 import lsv.model.*;
-
 import lsv.grammar.Formula;
-
 import java.util.*;
 
 /**
@@ -12,9 +10,11 @@ import java.util.*;
  */
 public class SimpleModelChecker implements ModelChecker {
 
-	private ExecutionGraph graph = new ExecutionGraph();
+//	private ExecutionGraph graph = new ExecutionGraph();
 	private ArrayList<String> trace;
 	private Formula constraint = null;
+	private HashMap<String, State> stateNameTable = new HashMap<>();
+	private ArrayList<State> inits = new ArrayList<>();
 
 	/**
 	 * Determines whether a formula holds for the given model by looping through
@@ -22,14 +22,13 @@ public class SimpleModelChecker implements ModelChecker {
 	 * state/path formula checking.
 	 */
 	public boolean check(Model model, Formula constraint, Formula formula) {
-		ArrayList<GraphNode> initialSt = graph.getInits();
 		if (constraint != null) {
 			this.constraint = constraint;
 			if (constraint.getQuantifier() != null) {
 				boolean constraintHolds = false;
-				for (int index = 0; index < initialSt.size(); index++) {
+				for (int index = 0; index < inits.size(); index++) {
 					trace = new ArrayList<>();
-					State initSt = initialSt.get(index).getState();
+					State initSt = inits.get(index);
 					if (!checkFormulaKind(constraint, initSt, model)) {
 						if(constraint.getQuantifier().contains("A")) {
 							return false;
@@ -52,9 +51,9 @@ public class SimpleModelChecker implements ModelChecker {
 					
 				}
 			} else {
-				for (int index = 0; index < initialSt.size(); index++) {
+				for (int index = 0; index < inits.size(); index++) {
 					trace = new ArrayList<>();
-					State initSt = initialSt.get(index).getState();
+					State initSt = inits.get(index);
 					if (!checkStateFormula(constraint, initSt, model)) {
 						return false;
 					}
@@ -64,9 +63,9 @@ public class SimpleModelChecker implements ModelChecker {
 		boolean formulaHolds = true;
 		// Go through all of the initial states and check if the formula holds
 		// for all of them
-		for (int index = 0; index < initialSt.size(); index++) {
+		for (int index = 0; index < inits.size(); index++) {
 			trace = new ArrayList<>();
-			State initSt = initialSt.get(index).getState();
+			State initSt = inits.get(index);
 			// If formula has quantifier E in front of it, formula has to hold
 			// for at least one initial state
 			// if A - for all initial states
@@ -151,24 +150,10 @@ public class SimpleModelChecker implements ModelChecker {
 		// part two holds, then formula holds
 		if (((actionsB == null || contains(actionsB, transitionName)) && !(transitionName.equals("first") && isNext))
 				|| (transitionName.equals("first") && !isNext)) {
-			// for(int i = trace.size()-1; i>=0; i--) {
-			// if(!trace.get(i).equals("\\")) {
-			// trace.remove(i);
-			// }
-			// else {
-			// break;
-			// }
-			// }
 			if (!transitionName.equals("first")) {
 				trace.add(transitionName);
 			}
 			if (checkFormulaKind(contents[1], state, model)) {
-				// if (!forAll) {
-				// return true;
-				// }
-				// else {
-				// reached = true;
-				// }
 				return true;
 			}
 		}
@@ -191,14 +176,6 @@ public class SimpleModelChecker implements ModelChecker {
 					}
 					boolean first = true;
 					while (iterator.hasNext()) {
-						// for(int i = trace.size()-1; i>=0; i--) {
-						// if(!trace.get(i).equals("")) {
-						// trace.remove(i);
-						// }
-						// else {
-						// break;
-						// }
-						// }
 						if (!first) {
 							for (int i = trace.size() - 1; i >= 0; i--) {
 								if (!trace.get(i).equals("\\")) {
@@ -211,7 +188,7 @@ public class SimpleModelChecker implements ModelChecker {
 						first = false;
 						Transition transition = iterator.next();
 						String nextStateStr = transition.getTarget();
-						State nextState = graph.getStateNameTable().get(nextStateStr).getState();
+						State nextState = stateNameTable.get(nextStateStr);
 						iterator.remove();
 						// Check the same path formula for the destination
 						// state
@@ -220,11 +197,6 @@ public class SimpleModelChecker implements ModelChecker {
 							if (!forAll) {
 								return true;
 							}
-							// else {
-							// if (forAll || transitionsToCheck.size()==0) {
-							// return false;
-							// }
-							// }
 						} else {
 							if (forAll) {
 								return false;
@@ -512,13 +484,14 @@ public class SimpleModelChecker implements ModelChecker {
 		}
 		return result;
 	}
-
-	public void setExecutionGraph(Model model) {
-		graph.createGraph(model);
-	}
-
-	public ExecutionGraph getExecutionGraph() {
-		return graph;
+	
+	public void setStates(Model model) {
+		for (State state : model.getStates()) {
+			stateNameTable.put(state.getName(), state);
+			if (state.isInit()) {
+				inits.add(stateNameTable.get(state.getName()));
+			}
+		}
 	}
 
 	public static void main(String[] args) {
@@ -527,15 +500,10 @@ public class SimpleModelChecker implements ModelChecker {
 
 		// Determine model and formula
 		// TODO pass these as command line arguments
-		Model model = Builder.buildModel("test/resources/ourTests/modelForNested.json");
-		Formula formula = Builder.buildFormula("test/resources/ourTests/nestedFormula.json");
-
-		// System.out.println(formula.getOperator().length());
-
-		// Create execution graph
-		smc.graph = new ExecutionGraph();
-		smc.graph.createGraph(model);
-		smc.graph.printTransitionStateDetails();
+		Model model = Builder.buildModel("test/resources/ourTests/untilModel1.json");
+		Formula formula = Builder.buildFormula("test/resources/ourTests/untilWithActForAllFormula.json");
+		
+		smc.setStates(model);
 
 		// Check for the result
 		boolean result = smc.check(model, null, formula);
