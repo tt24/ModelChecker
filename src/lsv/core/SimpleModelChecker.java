@@ -15,6 +15,8 @@ public class SimpleModelChecker implements ModelChecker {
 	private Formula constraint = null;
 	private HashMap<String, State> stateNameTable = new HashMap<>();
 	private ArrayList<State> inits = new ArrayList<>();
+	private final String SEPARATOR = "\\";
+	private final String JUMP = "jump back";
 
 	/**
 	 * Determines whether a formula holds for the given model by looping through
@@ -42,6 +44,8 @@ public class SimpleModelChecker implements ModelChecker {
 					}
 				}
 				if(!constraintHolds) {
+					trace.clear();
+					trace.add("No paths were found that satisfy the constraint");
 					return false;
 				}
 				if(constraint.getQuantifier().contains("A")) {
@@ -78,6 +82,13 @@ public class SimpleModelChecker implements ModelChecker {
 					return false;
 				}
 			}
+		}
+		trace.clear();
+		if(formula.getQuantifier().contains("E")) {
+			trace.add("No paths that satisfy the formula found");
+		}
+		else {
+			trace.add("All paths satisfy the formula");
 		}
 		return formulaHolds;
 	}
@@ -132,7 +143,7 @@ public class SimpleModelChecker implements ModelChecker {
 	 *            - formula to check
 	 * @param state
 	 *            - will start checking from this state
-	 * @param transitionName
+	 * @param actionName
 	 *            - transition that lead to this state. If this is the first
 	 *            state we check the formula for, pass "first" as the argument.
 	 * @param transitionsToCheck
@@ -141,7 +152,7 @@ public class SimpleModelChecker implements ModelChecker {
 	 * @param model
 	 * @return - boolean value true if the formulae holds and false otherwise
 	 */
-	public boolean checkUntil(Formula formula, State state, String transitionName,
+	public boolean checkUntil(Formula formula, State state, String actionName,
 			HashMap<String, ArrayList<Transition>> transitionsToCheck, Model model, String[] actionsA,
 			String[] actionsB, boolean forAll, boolean isNext) {
 		System.out.println("Check until " + getStringFormula(formula) + " state " + state.getName());
@@ -149,20 +160,24 @@ public class SimpleModelChecker implements ModelChecker {
 		boolean reached = false;
 		// If we got to the current state via an action of the second set and
 		// part two holds, then formula holds
-		if (((actionsB == null || contains(actionsB, transitionName)) && !(transitionName.equals("first") && isNext))
-				|| (transitionName.equals("first") && !isNext)) {
-			if (!transitionName.equals("first")) {
-				trace.add(transitionName);
+		if (((actionsB == null || contains(actionsB, actionName)) && !(actionName.equals("first") && isNext))
+				|| (actionName.equals("first") && !isNext)) {
+			if (!actionName.equals("first")) {
+				trace.add(actionName);
 			}
 			if (checkFormulaKind(contents[1], state, model)) {
 				return true;
 			}
+			if(!actionName.equals("first")) {
+				trace.remove(trace.size()-1);
+				trace.remove(trace.size()-1);
+			}
 		}
 		// Otherwise check if we got here via an action from the first action
 		// set
-		if (actionsA == null || contains(actionsA, transitionName) || transitionName.equals("first")) {
-			if (!transitionName.equals("first")) {
-				trace.add(transitionName);
+		if (actionsA == null || contains(actionsA, actionName) || actionName.equals("first")) {
+			if (!actionName.equals("first")) {
+				trace.add(actionName);
 			}
 			// If so, check whether the first part of the formula holds
 			if (checkFormulaKind(contents[0], state, model)) {
@@ -173,19 +188,27 @@ public class SimpleModelChecker implements ModelChecker {
 					Iterator<Transition> iterator = transitionsToCheck.get(state.getName()).iterator();
 					if (transitionsToCheck.get(state.getName()) != null
 							&& transitionsToCheck.get(state.getName()).size() > 1) {
-						trace.add("\\");
+						trace.add(SEPARATOR);
 					}
 					boolean first = true;
 					while (iterator.hasNext()) {
-						if (!first) {
-							for (int i = trace.size() - 1; i >= 0; i--) {
-								if (!trace.get(i).equals("\\")) {
-									trace.remove(i);
-								} else {
-									break;
-								}
-							}
-						}
+//						if (!first) {
+//							boolean here = trace.contains("here")||trace.contains("here1");
+//							for (int i = trace.size() - 1; i >= 0; i--) {
+//								System.out.println(getStringArray(getTrace()));
+//								if (!trace.get(i).equals(SEPARATOR)) {
+//									trace.remove(i);
+//								} else {
+//									if(here) {
+//										trace.remove(i);
+//										here = false;
+//									}
+//									else {
+//										break;
+//									}
+//								}
+//							}
+//						}
 						first = false;
 						Transition transition = iterator.next();
 						String nextStateStr = transition.getTarget();
@@ -198,17 +221,23 @@ public class SimpleModelChecker implements ModelChecker {
 							if (!forAll) {
 								return true;
 							}
+							if(!trace.get(trace.size()-1).equals(JUMP)) {
+								trace.add(JUMP);
+							}
 						} else {
 							if (forAll) {
 								return false;
+							}
+							if(!trace.get(trace.size()-1).equals(JUMP)) {
+								trace.add(JUMP);
 							}
 						}
 					}
 				}
 			}
 		} else {
-			if (forAll && !contains(actionsB, transitionName)) {
-				trace.add(transitionName);
+			if (forAll && !contains(actionsB, actionName)) {
+				trace.add(actionName);
 				return false;
 			}
 		}
@@ -440,9 +469,9 @@ public class SimpleModelChecker implements ModelChecker {
 	}
 
 	public String[] getTrace() {
-		while (trace.contains("\\")) {
-			trace.remove("\\");
-		}
+//		while (trace.contains(SEPARATOR)) {
+//			trace.remove(SEPARATOR);
+//		}
 		String[] array = new String[trace.size()];
 		return trace.toArray(array);
 	}
@@ -501,8 +530,8 @@ public class SimpleModelChecker implements ModelChecker {
 
 		// Determine model and formula
 		// TODO pass these as command line arguments
-		Model model = Builder.buildModel("test/resources/ourTests/untilModel1.json");
-		Formula formula = Builder.buildFormula("test/resources/ourTests/untilWithActForAllFormula.json");
+		Model model = Builder.buildModel("test/resources/model2.json");
+		Formula formula = Builder.buildFormula("test/resources/ctl.json");
 		
 		smc.setStates(model);
 
