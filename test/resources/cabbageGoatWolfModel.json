@@ -1,0 +1,276 @@
+{
+	"states": [
+		{
+			"init": true,
+			"name": "none",
+			"label": ["c","f", "g", "w"]
+		}, 
+		{
+			"init": false,
+			"name": "f", 
+			"label": ["c","o", "g", "w"]
+		}, 
+		{
+			"init": false,
+			"name": "cf",
+			"label": ["n","o", "g", "w"]
+		},
+		{
+			"init": false,
+			"name": "fw",
+			"label": ["c","o", "g", "q"]
+		}, 
+		{
+			"init": false,
+			"name": "fg",
+			"label": ["c","o", "p", "w"]
+		}, 
+		{
+			"init": false,
+			"name": "g", 
+			"label": ["c","f", "p", "w"]
+		}, 
+		{
+			"init": false,
+			"name": "cfg",
+			"label": ["n","o", "p", "w"]
+		},
+		{
+			"init": false,
+			"name": "fgw",
+			"label": ["c","o", "p", "q"]
+		},
+		{
+			"init": false,
+			"name": "c",
+			"label": ["n","f", "g", "w"]
+		}, 
+		{
+			"init": false,
+			"name": "w", 
+			"label": ["c","f", "g", "q"]
+		}, 
+		{
+			"init": false,
+			"name": "cfw",
+			"label": ["n","o", "g", "q"]
+		},
+		{
+			"init": false,
+			"name": "cw",
+			"label": ["n","f", "g", "q"]
+		},
+		{
+			"init": false,
+			"name": "cfgw",
+			"label": ["n","o", "p", "q"]
+		}, 
+		{
+			"init": false,
+			"name": "cg", 
+			"label": ["n","f", "p", "w"]
+		}, 
+		{
+			"init": false,
+			"name": "gw",
+			"label": ["c","f", "p", "q"]
+		},
+		{
+			"init": false,
+			"name": "cgw",
+			"label": ["n","f", "p", "q"]
+		}
+
+	],
+	"transitions": [
+		{
+			"source": "none",
+			"target": "f",
+			"actions": ["s"]
+		}, 
+		{
+			"source": "f",
+			"target": "none",
+			"actions": ["t"]
+		}, 
+		{
+			"source": "none",
+			"target": "cf",
+			"actions": ["b"]
+		}, 		{
+			"source": "cf",
+			"target": "none",
+			"actions": ["a"]
+		}, 
+		{
+			"source": "none",
+			"target": "fw",
+			"actions": ["b"]
+		}, 
+		{
+			"source": "none",
+			"target": "fg",
+			"actions": ["b"]
+		}, 
+		{
+			"source": "fg",
+			"target": "none",
+			"actions": ["a"]
+		},
+		{
+			"source": "fg",
+			"target": "g",
+			"actions": ["t"]
+		}, 
+		{
+			"source": "g",
+			"target": "fg",
+			"actions": ["s"]
+		}, 
+		{
+			"source": "g",
+			"target": "cfg",
+			"actions": ["b"]
+		}, 		{
+			"source": "cfg",
+			"target": "g",
+			"actions": ["a"]
+		}, 
+		{
+			"source": "g",
+			"target": "fgw",
+			"actions": ["b"]
+		}, 
+		{
+			"source": "fgw",
+			"target": "g",
+			"actions": ["a"]
+		}, 
+		{
+			"source": "cf",
+			"target": "c",
+			"actions": ["t"]
+		}, 
+		{
+			"source": "c",
+			"target": "cf",
+			"actions": ["s"]
+		}, 
+		{
+			"source": "fw",
+			"target": "w",
+			"actions": ["t"]
+		}, 		{
+			"source": "w",
+			"target": "fw",
+			"actions": ["s"]
+		}, 
+		{
+			"source": "c",
+			"target": "cfg",
+			"actions": ["b"]
+		}, 
+		{
+			"source": "cfg",
+			"target": "c",
+			"actions": ["a"]
+		}, 
+		{
+			"source": "w",
+			"target": "fgw",
+			"actions": ["b"]
+		}, 
+		{
+			"source": "fgw",
+			"target": "w",
+			"actions": ["a"]
+		}, 
+		{
+			"source": "cfg",
+			"target": "cg",
+			"actions": ["t"]
+		}, 		{
+			"source": "cg",
+			"target": "cfg",
+			"actions": ["s"]
+		}, 
+		{
+			"source": "fgw",
+			"target": "gw",
+			"actions": ["t"]
+		}, 
+		{
+			"source": "gw",
+			"target": "fgw",
+			"actions": ["s"]
+		}, 		{
+			"source": "c",
+			"target": "cfw",
+			"actions": ["b"]
+		}, 
+		{
+			"source": "cfw",
+			"target": "c",
+			"actions": ["a"]
+		}, 
+		{
+			"source": "w",
+			"target": "cfw",
+			"actions": ["b"]
+		}, 
+		{
+			"source": "cfw",
+			"target": "w",
+			"actions": ["a"]
+		}, 
+		{
+			"source": "cfw",
+			"target": "cw",
+			"actions": ["t"]
+		}, 
+		{
+			"source": "cw",
+			"target": "cfw",
+			"actions": ["s"]
+		}, 		{
+			"source": "cw",
+			"target": "cfgw",
+			"actions": ["b"]
+		}, 
+		{
+			"source": "cfgw",
+			"target": "cw",
+			"actions": ["a"]
+		}, 
+		{
+			"source": "cfgw",
+			"target": "cg",
+			"actions": ["a"]
+		}, 
+		{
+			"source": "cg",
+			"target": "cfgw",
+			"actions": ["b"]
+		}, 
+		{
+			"source": "cfgw",
+			"target": "gw",
+			"actions": ["a"]
+		}, 
+		{
+			"source": "gw",
+			"target": "cfgw",
+			"actions": ["b"]
+		}, 		{
+			"source": "cfgw",
+			"target": "cgw",
+			"actions": ["t"]
+		}, 
+		{
+			"source": "cgw",
+			"target": "cfgw",
+			"actions": ["s"]
+		} 
+
+	]
+}

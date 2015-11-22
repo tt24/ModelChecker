@@ -10,7 +10,7 @@ import java.util.*;
  */
 public class SimpleModelChecker implements ModelChecker {
 
-//	private ExecutionGraph graph = new ExecutionGraph();
+	// private ExecutionGraph graph = new ExecutionGraph();
 	private ArrayList<String> trace;
 	private Formula constraint = null;
 	private HashMap<String, State> stateNameTable = new HashMap<>();
@@ -32,27 +32,25 @@ public class SimpleModelChecker implements ModelChecker {
 					trace = new ArrayList<>();
 					State initSt = inits.get(index);
 					if (!checkFormulaKind(constraint, initSt, model)) {
-						if(constraint.getQuantifier().contains("A")) {
+						if (constraint.getQuantifier().contains("A")) {
 							return false;
 						}
-					}
-					else {
+					} else {
 						constraintHolds = true;
-						if(constraint.getQuantifier().contains("E")) {
+						if (constraint.getQuantifier().contains("E")) {
 							break;
 						}
 					}
 				}
-				if(!constraintHolds) {
+				if (!constraintHolds) {
 					trace.clear();
 					trace.add("No paths were found that satisfy the constraint");
 					return false;
 				}
-				if(constraint.getQuantifier().contains("A")) {
+				if (constraint.getQuantifier().contains("A")) {
 					constraint = null;
-				}
-				else {
-					
+				} else {
+
 				}
 			} else {
 				for (int index = 0; index < inits.size(); index++) {
@@ -83,12 +81,13 @@ public class SimpleModelChecker implements ModelChecker {
 				}
 			}
 		}
-		trace.clear();
-		if(formula.getQuantifier().contains("E")) {
-			trace.add("No paths that satisfy the formula found");
-		}
-		else {
-			trace.add("All paths satisfy the formula");
+		if (formula.getQuantifier() != null) {
+			trace.clear();
+			if (formula.getQuantifier().contains("E")) {
+				trace.add("No paths that satisfy the formula found");
+			} else {
+				trace.add("All paths satisfy the formula");
+			}
 		}
 		return formulaHolds;
 	}
@@ -129,9 +128,9 @@ public class SimpleModelChecker implements ModelChecker {
 		}
 		return table;
 	}
-	
+
 	public boolean checkConstraint(Formula constraint, State state, String transitionName) {
-		
+
 		return false;
 	}
 
@@ -168,9 +167,9 @@ public class SimpleModelChecker implements ModelChecker {
 			if (checkFormulaKind(contents[1], state, model)) {
 				return true;
 			}
-			if(!actionName.equals("first")) {
-				trace.remove(trace.size()-1);
-				trace.remove(trace.size()-1);
+			if (!actionName.equals("first")) {
+				trace.remove(trace.size() - 1);
+				trace.remove(trace.size() - 1);
 			}
 		}
 		// Otherwise check if we got here via an action from the first action
@@ -190,26 +189,25 @@ public class SimpleModelChecker implements ModelChecker {
 							&& transitionsToCheck.get(state.getName()).size() > 1) {
 						trace.add(SEPARATOR);
 					}
-					boolean first = true;
 					while (iterator.hasNext()) {
-//						if (!first) {
-//							boolean here = trace.contains("here")||trace.contains("here1");
-//							for (int i = trace.size() - 1; i >= 0; i--) {
-//								System.out.println(getStringArray(getTrace()));
-//								if (!trace.get(i).equals(SEPARATOR)) {
-//									trace.remove(i);
-//								} else {
-//									if(here) {
-//										trace.remove(i);
-//										here = false;
-//									}
-//									else {
-//										break;
-//									}
-//								}
-//							}
-//						}
-						first = false;
+						// if (!first) {
+						// boolean here =
+						// trace.contains("here")||trace.contains("here1");
+						// for (int i = trace.size() - 1; i >= 0; i--) {
+						// System.out.println(getStringArray(getTrace()));
+						// if (!trace.get(i).equals(SEPARATOR)) {
+						// trace.remove(i);
+						// } else {
+						// if(here) {
+						// trace.remove(i);
+						// here = false;
+						// }
+						// else {
+						// break;
+						// }
+						// }
+						// }
+						// }
 						Transition transition = iterator.next();
 						String nextStateStr = transition.getTarget();
 						State nextState = stateNameTable.get(nextStateStr);
@@ -221,14 +219,14 @@ public class SimpleModelChecker implements ModelChecker {
 							if (!forAll) {
 								return true;
 							}
-							if(!trace.get(trace.size()-1).equals(JUMP)) {
+							if (!trace.get(trace.size() - 1).equals(JUMP)) {
 								trace.add(JUMP);
 							}
 						} else {
 							if (forAll) {
 								return false;
 							}
-							if(!trace.get(trace.size()-1).equals(JUMP)) {
+							if (!trace.get(trace.size() - 1).equals(JUMP)) {
 								trace.add(JUMP);
 							}
 						}
@@ -311,11 +309,11 @@ public class SimpleModelChecker implements ModelChecker {
 		System.out.println("Checking the state formula " + getStringFormula(formula) + " for state " + state.getName()
 				+ " with labels: " + getStringArray(state.getLabel()));
 		if (!trace.isEmpty()) {
-			if (!trace.get(trace.size() - 1).equals(state.getName())) {
-				trace.add(state.getName());
+			if (!trace.get(trace.size() - 1).equals("\""+state.getName()+"\"")) {
+				trace.add("\""+state.getName()+"\"");
 			}
 		} else {
-			trace.add(state.getName());
+			trace.add("\""+state.getName()+"\"");
 		}
 		// If formula is a negation, it will have to be treated differently
 		boolean negation = formula.isNegation();
@@ -469,9 +467,9 @@ public class SimpleModelChecker implements ModelChecker {
 	}
 
 	public String[] getTrace() {
-//		while (trace.contains(SEPARATOR)) {
-//			trace.remove(SEPARATOR);
-//		}
+		// while (trace.contains(SEPARATOR)) {
+		// trace.remove(SEPARATOR);
+		// }
 		String[] array = new String[trace.size()];
 		return trace.toArray(array);
 	}
@@ -514,7 +512,7 @@ public class SimpleModelChecker implements ModelChecker {
 		}
 		return result;
 	}
-	
+
 	public void setStates(Model model) {
 		for (State state : model.getStates()) {
 			stateNameTable.put(state.getName(), state);
@@ -530,9 +528,9 @@ public class SimpleModelChecker implements ModelChecker {
 
 		// Determine model and formula
 		// TODO pass these as command line arguments
-		Model model = Builder.buildModel("test/resources/model2.json");
-		Formula formula = Builder.buildFormula("test/resources/ctl.json");
-		
+		Model model = Builder.buildModel("test/resources/cabbageGoatWolfModel.json");
+		Formula formula = Builder.buildFormula("test/resources/ferrymanHasToMove.json");
+
 		smc.setStates(model);
 
 		// Check for the result
