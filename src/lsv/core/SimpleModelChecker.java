@@ -17,6 +17,8 @@ public class SimpleModelChecker implements ModelChecker {
 	private ArrayList<State> inits = new ArrayList<>();
 	private final String SEPARATOR = "\\";
 	private final String JUMP = "jump back";
+	private HashMap<String, ArrayList<Transition>> transitionsAfterConstraint = null;
+	private boolean constraintSatisfied = false;
 
 	/**
 	 * Determines whether a formula holds for the given model by looping through
@@ -26,20 +28,21 @@ public class SimpleModelChecker implements ModelChecker {
 	public boolean check(Model model, Formula constraint, Formula formula) {
 		if (constraint != null) {
 			this.constraint = constraint;
+			transitionsAfterConstraint = getAllTransitions(model, null, null, false);
 			if (constraint.getQuantifier() != null) {
 				boolean constraintHolds = false;
 				for (int index = 0; index < inits.size(); index++) {
 					trace = new ArrayList<>();
 					State initSt = inits.get(index);
-					if (!checkFormulaKind(constraint, initSt, model)) {
+					if (!checkFormulaKind(constraint, initSt, model) && !constraintSatisfied) {
 						if (constraint.getQuantifier().contains("A")) {
 							return false;
 						}
 					} else {
 						constraintHolds = true;
-						if (constraint.getQuantifier().contains("E")) {
-							break;
-						}
+						// if (constraint.getQuantifier().contains("E")) {
+						// break;
+						// }
 					}
 				}
 				if (!constraintHolds) {
@@ -47,11 +50,11 @@ public class SimpleModelChecker implements ModelChecker {
 					trace.add("No paths were found that satisfy the constraint");
 					return false;
 				}
-				if (constraint.getQuantifier().contains("A")) {
-					constraint = null;
-				} else {
-
-				}
+				// if (constraint.getQuantifier().contains("A")) {
+				// constraint = null;
+				// } else {
+				//
+				// }
 			} else {
 				for (int index = 0; index < inits.size(); index++) {
 					trace = new ArrayList<>();
@@ -61,6 +64,7 @@ public class SimpleModelChecker implements ModelChecker {
 					}
 				}
 			}
+			this.constraint = null;
 		}
 		boolean formulaHolds = true;
 		// Go through all of the initial states and check if the formula holds
@@ -113,16 +117,22 @@ public class SimpleModelChecker implements ModelChecker {
 			// action sets
 			// If an action set is not specified, we assume that all transitions
 			// are relevant
-			if (actionsA == null || actionsB == null || contains(actionsB, transition.getActions()[0])
-					|| contains(actionsA, transition.getActions()[0]) || forAll) {
-				if (table.containsKey(transition.getSource())) {
-					ArrayList<Transition> transitionList = table.get(transition.getSource());
-					transitionList.add(transition);
-					table.put(transition.getSource(), transitionList);
-				} else {
-					ArrayList<Transition> transitionList = new ArrayList<>();
-					transitionList.add(transition);
-					table.put(transition.getSource(), transitionList);
+			if ((transitionsAfterConstraint != null
+					&& transitionsAfterConstraint.get(transition.getSource()).contains(transition))
+					|| transitionsAfterConstraint == null || constraint != null) {
+				if(transitionsAfterConstraint!=null && transitionsAfterConstraint.get(transition.getSource())!=null)
+				System.out.println("                                                                  " + transitionsAfterConstraint.get(transition.getSource()).contains(transition) + " "+ (transitionsAfterConstraint == null)+ " "+ (constraint!=null));
+				if (actionsA == null || actionsB == null || contains(actionsB, transition.getActions()[0])
+						|| contains(actionsA, transition.getActions()[0]) || forAll) {
+					if (table.containsKey(transition.getSource())) {
+						ArrayList<Transition> transitionList = table.get(transition.getSource());
+						transitionList.add(transition);
+						table.put(transition.getSource(), transitionList);
+					} else {
+						ArrayList<Transition> transitionList = new ArrayList<>();
+						transitionList.add(transition);
+						table.put(transition.getSource(), transitionList);
+					}
 				}
 			}
 		}
@@ -189,6 +199,7 @@ public class SimpleModelChecker implements ModelChecker {
 							&& transitionsToCheck.get(state.getName()).size() > 1) {
 						trace.add(SEPARATOR);
 					}
+					boolean onePathSatisfied = false;
 					while (iterator.hasNext()) {
 						// if (!first) {
 						// boolean here =
@@ -216,8 +227,14 @@ public class SimpleModelChecker implements ModelChecker {
 						// state
 						if (reached = checkUntil(formula, nextState, transition.getActions()[0], transitionsToCheck,
 								model, actionsA, actionsB, forAll, isNext)) {
+							onePathSatisfied = true;
 							if (!forAll) {
-								return true;
+								if (constraint == null) {
+									return true;
+								}
+								else {
+									constraintSatisfied = true;
+								}
 							}
 							if (!trace.get(trace.size() - 1).equals(JUMP)) {
 								trace.add(JUMP);
@@ -225,6 +242,9 @@ public class SimpleModelChecker implements ModelChecker {
 						} else {
 							if (forAll) {
 								return false;
+							}
+							if (constraint != null && onePathSatisfied) {
+								removeTransition(transition, state.getName());
 							}
 							if (!trace.get(trace.size() - 1).equals(JUMP)) {
 								trace.add(JUMP);
@@ -240,6 +260,22 @@ public class SimpleModelChecker implements ModelChecker {
 			}
 		}
 		return reached;
+	}
+
+	public void removeTransition(Transition transition, String stateName) {
+		System.out.println("CALLLED " + stateName);
+		if (transitionsAfterConstraint.get(stateName) != null) {
+			Iterator iterator = transitionsAfterConstraint.get(stateName).iterator();
+			while (iterator.hasNext()) {
+				Transition transitionToBeChecked = (Transition) iterator.next();
+				System.out.println(transition.toString() + "                "+ transitionToBeChecked.toString());
+				if (transition.toString().equals(transitionToBeChecked.toString())
+						&& transition.getTarget().equals(transitionToBeChecked.getTarget())) {
+					System.out.println("FOUND");
+					iterator.remove();
+				}
+			}
+		}
 	}
 
 	public boolean contains(String[] array, String element) {
@@ -309,11 +345,11 @@ public class SimpleModelChecker implements ModelChecker {
 		System.out.println("Checking the state formula " + getStringFormula(formula) + " for state " + state.getName()
 				+ " with labels: " + getStringArray(state.getLabel()));
 		if (!trace.isEmpty()) {
-			if (!trace.get(trace.size() - 1).equals("\""+state.getName()+"\"")) {
-				trace.add("\""+state.getName()+"\"");
+			if (!trace.get(trace.size() - 1).equals("\"" + state.getName() + "\"")) {
+				trace.add("\"" + state.getName() + "\"");
 			}
 		} else {
-			trace.add("\""+state.getName()+"\"");
+			trace.add("\"" + state.getName() + "\"");
 		}
 		// If formula is a negation, it will have to be treated differently
 		boolean negation = formula.isNegation();
@@ -528,13 +564,18 @@ public class SimpleModelChecker implements ModelChecker {
 
 		// Determine model and formula
 		// TODO pass these as command line arguments
-		Model model = Builder.buildModel("test/resources/cabbageGoatWolfModel.json");
-		Formula formula = Builder.buildFormula("test/resources/ferrymanHasToMove.json");
+		// Model model =
+		// Builder.buildModel("test/resources/cabbageGoatWolfModel.json");
+		// Formula formula =
+		// Builder.buildFormula("test/resources/ferrymanHasToMove.json");
+		Model model = Builder.buildModel("test/resources/constraintFormulaCheckModel.json");
+		Formula formula = Builder.buildFormula("test/resources/formulaCheckAfterConstraint.json");
+		Formula constraint = Builder.buildFormula("test/resources/ourConstraint.json");
 
 		smc.setStates(model);
 
 		// Check for the result
-		boolean result = smc.check(model, null, formula);
+		boolean result = smc.check(model, constraint, formula);
 		System.out.println("Obtained: " + result);
 		System.out.println(smc.getStringArray(smc.getTrace()));
 	}
