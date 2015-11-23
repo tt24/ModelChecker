@@ -270,6 +270,11 @@
 			"source": "cgw",
 			"target": "cfgw",
 			"actions": ["s"]
+		}, 
+		{
+			"source": "none",
+			"target": "cfgw",
+			"actions": ["s"]
 		} 
 
 	]

@@ -2,6 +2,9 @@ package lsv.core;
 
 import lsv.model.*;
 import lsv.grammar.Formula;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.*;
 
 /**
@@ -40,9 +43,6 @@ public class SimpleModelChecker implements ModelChecker {
 						}
 					} else {
 						constraintHolds = true;
-						// if (constraint.getQuantifier().contains("E")) {
-						// break;
-						// }
 					}
 				}
 				if (!constraintHolds) {
@@ -50,11 +50,6 @@ public class SimpleModelChecker implements ModelChecker {
 					trace.add("No paths were found that satisfy the constraint");
 					return false;
 				}
-				// if (constraint.getQuantifier().contains("A")) {
-				// constraint = null;
-				// } else {
-				//
-				// }
 			} else {
 				for (int index = 0; index < inits.size(); index++) {
 					trace = new ArrayList<>();
@@ -120,8 +115,6 @@ public class SimpleModelChecker implements ModelChecker {
 			if ((transitionsAfterConstraint != null
 					&& transitionsAfterConstraint.get(transition.getSource()).contains(transition))
 					|| transitionsAfterConstraint == null || constraint != null) {
-				if(transitionsAfterConstraint!=null && transitionsAfterConstraint.get(transition.getSource())!=null)
-				System.out.println("                                                                  " + transitionsAfterConstraint.get(transition.getSource()).contains(transition) + " "+ (transitionsAfterConstraint == null)+ " "+ (constraint!=null));
 				if (actionsA == null || actionsB == null || contains(actionsB, transition.getActions()[0])
 						|| contains(actionsA, transition.getActions()[0]) || forAll) {
 					if (table.containsKey(transition.getSource())) {
@@ -201,24 +194,6 @@ public class SimpleModelChecker implements ModelChecker {
 					}
 					boolean onePathSatisfied = false;
 					while (iterator.hasNext()) {
-						// if (!first) {
-						// boolean here =
-						// trace.contains("here")||trace.contains("here1");
-						// for (int i = trace.size() - 1; i >= 0; i--) {
-						// System.out.println(getStringArray(getTrace()));
-						// if (!trace.get(i).equals(SEPARATOR)) {
-						// trace.remove(i);
-						// } else {
-						// if(here) {
-						// trace.remove(i);
-						// here = false;
-						// }
-						// else {
-						// break;
-						// }
-						// }
-						// }
-						// }
 						Transition transition = iterator.next();
 						String nextStateStr = transition.getTarget();
 						State nextState = stateNameTable.get(nextStateStr);
@@ -231,8 +206,7 @@ public class SimpleModelChecker implements ModelChecker {
 							if (!forAll) {
 								if (constraint == null) {
 									return true;
-								}
-								else {
+								} else {
 									constraintSatisfied = true;
 								}
 							}
@@ -263,15 +237,13 @@ public class SimpleModelChecker implements ModelChecker {
 	}
 
 	public void removeTransition(Transition transition, String stateName) {
-		System.out.println("CALLLED " + stateName);
 		if (transitionsAfterConstraint.get(stateName) != null) {
 			Iterator iterator = transitionsAfterConstraint.get(stateName).iterator();
 			while (iterator.hasNext()) {
 				Transition transitionToBeChecked = (Transition) iterator.next();
-				System.out.println(transition.toString() + "                "+ transitionToBeChecked.toString());
 				if (transition.toString().equals(transitionToBeChecked.toString())
 						&& transition.getTarget().equals(transitionToBeChecked.getTarget())) {
-					System.out.println("FOUND");
+					System.out.println("Removed " + transition.toString());
 					iterator.remove();
 				}
 			}
@@ -503,9 +475,6 @@ public class SimpleModelChecker implements ModelChecker {
 	}
 
 	public String[] getTrace() {
-		// while (trace.contains(SEPARATOR)) {
-		// trace.remove(SEPARATOR);
-		// }
 		String[] array = new String[trace.size()];
 		return trace.toArray(array);
 	}
@@ -558,24 +527,34 @@ public class SimpleModelChecker implements ModelChecker {
 		}
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 
 		SimpleModelChecker smc = new SimpleModelChecker();
 
 		// Determine model and formula
 		// TODO pass these as command line arguments
-		// Model model =
-		// Builder.buildModel("test/resources/cabbageGoatWolfModel.json");
-		// Formula formula =
-		// Builder.buildFormula("test/resources/ferrymanHasToMove.json");
-		Model model = Builder.buildModel("test/resources/constraintFormulaCheckModel.json");
-		Formula formula = Builder.buildFormula("test/resources/formulaCheckAfterConstraint.json");
-		Formula constraint = Builder.buildFormula("test/resources/ourConstraint.json");
-
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		System.out.println(
+				"Enter the path and the file name for the model (e.g. test/resources/cabbageGoatWolfModel.json)");
+		String modelName = br.readLine();
+		System.out.println(
+				"Enter the path and the file name for the formula (e.g. test/resources/cabbageGoatWolfCtl.json)");
+		String formulaName = br.readLine();
+		System.out.println(
+				"Enter the path and the file name for the constraint (e.g. test/resources/cabbageGoatWolfConstraint.json) or null if the constraint is not specified");
+		String constraintName = br.readLine();
+		Model model = Builder.buildModel(modelName);
+		Formula formula = Builder.buildFormula(formulaName);
+		Formula constraint = null;
+		if (!constraintName.equals("null")) {
+			constraint = Builder.buildFormula(constraintName);
+		}
 		smc.setStates(model);
-
+		System.out.println("CHECK:");
 		// Check for the result
 		boolean result = smc.check(model, constraint, formula);
+		System.out.println();
+		System.out.println("RESULT:");
 		System.out.println("Obtained: " + result);
 		System.out.println(smc.getStringArray(smc.getTrace()));
 	}
